@@ -8,7 +8,7 @@ const fs = require('fs');
 let router = express.Router()
 const pino = require("pino");
 const {
-	default: Arslan_Tech,
+	default: Nobita,
 	useMultiFileAuthState,
 	jidNormalizedUser,
 	Browsers,
@@ -28,13 +28,13 @@ const {
 } = require("node:fs/promises")
 router.get('/', async (req, res) => {
 	const id = makeid();
-	async function Arslan_MD_QR_CODE() {
+	async function Nobita_QR_CODE() {
 		const {
 			state,
 			saveCreds
 		} = await useMultiFileAuthState('./temp/' + id)
 		try {
-			let Qr_Code_By_Arslan_Tech = Arslan_Tech({
+			let Qr_Code_By_Nobita = Arslan_Tech({
 				auth: state,
 				printQRInTerminal: false,
 				logger: pino({
@@ -43,8 +43,8 @@ router.get('/', async (req, res) => {
 				browser: Browsers.macOS("Desktop"),
 			});
 
-			Qr_Code_By_Arslan_Tech.ev.on('creds.update', saveCreds)
-			Qr_Code_By_Arslan_Tech.ev.on("connection.update", async (s) => {
+			Qr_Code_By_Nobita.ev.on('creds.update', saveCreds)
+			Qr_Code_By_Nobita.ev.on("connection.update", async (s) => {
 				const {
 					connection,
 					lastDisconnect,
@@ -56,46 +56,45 @@ router.get('/', async (req, res) => {
 					let data = fs.readFileSync(__dirname + `/temp/${id}/creds.json`);
 					await delay(800);
 				   let b64data = Buffer.from(data).toString('base64');
-				   let session = await Qr_Code_By_Arslan_Tech.sendMessage(Qr_Code_By_Arslan_Tech.user.id, { text: 'ARSLAN-MD~' + b64data });
+				   let session = await Qr_Code_By_Nobita.sendMessage(Qr_Code_By_Nobita.user.id, { text: 'Nobita~' + b64data });
 	
-				   let Arslan_MD_TEXT = `
+				   let Nobita_TEXT = `
 ╔════════════════════◇
 ║『 SESSION CONNECTED』
-║ ✨Arslan-MD🔷
-║ ✨ArslanMD OFFICIAL🔷
+║ ✨Nobita🔷
+║ ✨Nobita OFFICIAL🔷
 ╚════════════════════╝
 
 
 ---
 
 ╔════════════════════◇
-║『 YOU'VE CHOSEN Arslan-MD 』
+║『 YOU'VE CHOSEN Nobita 』
 ║ -Set the session ID in Heroku:
 ║ - SESSION_ID: 
 ╚════════════════════╝
 ╔════════════════════◇
 ║ 『••• _V𝗶𝘀𝗶𝘁 𝗙𝗼𝗿_H𝗲𝗹𝗽 •••』
 ║❍ 𝐘𝐨𝐮𝐭𝐮𝐛𝐞: youtube.com/@arslanmdofficial
-║❍ 𝐎𝐰𝐧𝐞𝐫: 923237045919
-║❍ 𝐑𝐞𝐩𝐨: https://github.com/Arslan-MD/Arslan_MD 
-║❍ 𝐖𝐚𝐆𝗿𝐨𝐮𝐩: https://chat.whatsapp.com/KRyARlvcUjoIv1CPSSyQA5?mode=wwt
-║❍ 𝐖𝐚𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029VarfjW04tRrmwfb8x306
-║❍ 𝐈𝐧𝐬𝐭𝐚𝐠𝐫𝐚𝐦: _https://www.instagram.com/arslanmd
+║❍ 𝐎𝐰𝐧𝐞𝐫: 919216405520
+║❍ tg bot: https://t.me/CH4TB3N_BOT
+║❍ tg 2: https://t.me/C20NX
+║❍ tg 3: https://t.me/FLU00123
 ║ ☬ ☬ ☬ ☬
 ╚═════════════════════╝
-𒂀 Enjoy Arslan-MD
+𒂀 Enjoy Nobita
 
 
 ---
 
 Don't Forget To Give Star⭐ To My Repo
 ______________________________`;
-	 await Qr_Code_By_Arslan_Tech.sendMessage(Qr_Code_By_Arslan_Tech.user.id,{text:Arslan_MD_TEXT},{quoted:session})
+	 await Qr_Code_By_Nobita.sendMessage(Qr_Code_By_Arslan_Tech.user.id,{text:Nobita_TEXT},{quoted:session})
 
 
 
 					await delay(100);
-					await Qr_Code_By_Arslan_Tech.ws.close();
+					await Qr_Code_By_Nobita.ws.close();
 					return await removeFile("temp/" + id);
 				} else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
 					await delay(10000);
@@ -112,6 +111,6 @@ ______________________________`;
 			await removeFile("temp/" + id);
 		}
 	}
-	return await Arslan_MD_QR_CODE()
+	return await Nobita_QR_CODE()
 });
 module.exports = router
