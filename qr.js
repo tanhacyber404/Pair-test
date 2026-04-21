@@ -1,12 +1,15 @@
 const PastebinAPI = require('pastebin-js'),
 pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL')
+
 const {makeid} = require('./id');
 const QRCode = require('qrcode');
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+
 let router = express.Router()
 const pino = require("pino");
+
 const {
 	default: Arslan_Tech,
 	useMultiFileAuthState,
@@ -23,16 +26,21 @@ function removeFile(FilePath) {
 		force: true
 	})
 };
-const {
-	readFile
-} = require("node:fs/promises")
+
+const { readFile } = require("node:fs/promises")
+
 router.get('/', async (req, res) => {
 	const id = makeid();
+
 	async function Arslan_MD_QR_CODE() {
+
+		const sessionPath = path.join(__dirname, 'temp', id); // ✅ FIX PATH
+
 		const {
 			state,
 			saveCreds
-		} = await useMultiFileAuthState('./temp/' + id)
+		} = await useMultiFileAuthState(sessionPath)
+
 		try {
 			let Qr_Code_By_Arslan_Tech = Arslan_Tech({
 				auth: state,
@@ -44,27 +52,44 @@ router.get('/', async (req, res) => {
 			});
 
 			Qr_Code_By_Arslan_Tech.ev.on('creds.update', saveCreds)
+
+			let qrSent = false; // ✅ prevent multiple response
+
 			Qr_Code_By_Arslan_Tech.ev.on("connection.update", async (s) => {
 				const {
 					connection,
 					lastDisconnect,
 					qr
 				} = s;
-				if (qr) await res.end(await QRCode.toBuffer(qr));
+
+				// ✅ send QR only once
+				if (qr && !qrSent) {
+					qrSent = true;
+					return res.end(await QRCode.toBuffer(qr));
+				}
+
 				if (connection == "open") {
 					await delay(5000);
-					let data = fs.readFileSync(__dirname + `/temp/${id}/creds.json`);
+
+					const credsPath = path.join(sessionPath, 'creds.json'); // ✅ FIX PATH
+
+					let data = await readFile(credsPath); // ✅ async read
+
 					await delay(800);
-				   let b64data = Buffer.from(data).toString('base64');
-				   let session = await Qr_Code_By_Arslan_Tech.sendMessage(Qr_Code_By_Arslan_Tech.user.id, { text: 'ARSLAN-MD~' + b64data });
-	
-				   let Arslan_MD_TEXT = `
+
+					let b64data = Buffer.from(data).toString('base64');
+
+					let session = await Qr_Code_By_Arslan_Tech.sendMessage(
+						Qr_Code_By_Arslan_Tech.user.id,
+						{ text: 'ARSLAN-MD~' + b64data }
+					);
+
+					let Arslan_MD_TEXT = `
 ╔════════════════════◇
 ║『 SESSION CONNECTED』
 ║ ✨Arslan-MD🔷
 ║ ✨ArslanMD OFFICIAL🔷
 ╚════════════════════╝
-
 
 ---
 
@@ -85,23 +110,36 @@ router.get('/', async (req, res) => {
 ╚═════════════════════╝
 𒂀 Enjoy Arslan-MD
 
-
 ---
 
 Don't Forget To Give Star⭐ To My Repo
 ______________________________`;
-	 await Qr_Code_By_Arslan_Tech.sendMessage(Qr_Code_By_Arslan_Tech.user.id,{text:Arslan_MD_TEXT},{quoted:session})
 
-
+					await Qr_Code_By_Arslan_Tech.sendMessage(
+						Qr_Code_By_Arslan_Tech.user.id,
+						{ text: Arslan_MD_TEXT },
+						{ quoted: session }
+					);
 
 					await delay(100);
 					await Qr_Code_By_Arslan_Tech.ws.close();
-					return await removeFile("temp/" + id);
-				} else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
+
+					return removeFile(sessionPath); // ✅ FIX PATH
+				}
+
+				// ✅ safe reconnect check
+				else if (
+					connection === "close" &&
+					lastDisconnect &&
+					lastDisconnect.error &&
+					lastDisconnect.error.output &&
+					lastDisconnect.error.output.statusCode != 401
+				) {
 					await delay(10000);
 					Arslan_MD_QR_CODE();
 				}
 			});
+
 		} catch (err) {
 			if (!res.headersSent) {
 				await res.json({
@@ -109,9 +147,12 @@ ______________________________`;
 				});
 			}
 			console.log(err);
-			await removeFile("temp/" + id);
+
+			removeFile(sessionPath); // ✅ FIX PATH
 		}
 	}
+
 	return await Arslan_MD_QR_CODE()
 });
+
 module.exports = router
